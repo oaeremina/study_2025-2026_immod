@@ -1,0 +1,392 @@
+\begin{frame}
+\begin{block}{Докладчик}
+\protect\hypertarget{ux434ux43eux43aux43bux430ux434ux447ux438ux43a}{}
+\begin{columns}[T]
+\begin{column}{0.7\textwidth}
+\begin{itemize}
+\tightlist
+\item
+  Еремина Оксана Андреевна
+\item
+  студентка
+\item
+  группа НКНбд-01-23
+\item
+  Российский университет дружбы народов
+\end{itemize}
+\end{column}
+
+\begin{column}{0.3\textwidth}
+\end{column}
+\end{columns}
+\end{block}
+\end{frame}
+
+\begin{frame}{1. Цель работы}
+\protect\hypertarget{ux446ux435ux43bux44c-ux440ux430ux431ux43eux442ux44b}{}
+Реализовать эпидемиологическую модель SIR с использованием аппарата
+сетей Петри, выполнить детерминированное и стохастическое моделирование.
+\end{frame}
+
+\begin{frame}{2. Задание}
+\protect\hypertarget{ux437ux430ux434ux430ux43dux438ux435}{}
+\begin{enumerate}
+\tightlist
+\item
+  Создать рабочий каталог для кода.
+\item
+  Установить необходимые пакеты.
+\item
+  Реализовать модуль для построения сетей Петри модели SIR.
+\item
+  Построить сеть Петри для модели SIR.
+\item
+  Провести детерминированное моделирование (решение ОДУ).
+\item
+  Провести стохастическое моделирование (алгоритм Гиллеспи).
+\item
+  Выполнить сканирование параметра β.
+\item
+  Создать анимацию динамики эпидемии.
+\item
+  Выполнить параметрическое исследование (β, γ).
+\item
+  Преобразовать код в литературный стиль.
+\item
+  Сгенерировать производные форматы.
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f}{}
+\begin{block}{3.1. Подготовка рабочего пространства}
+\protect\hypertarget{ux43fux43eux434ux433ux43eux442ux43eux432ux43aux430-ux440ux430ux431ux43eux447ux435ux433ux43e-ux43fux440ux43eux441ux442ux440ux430ux43dux441ux442ux432ux430}{}
+\begin{itemize}
+\tightlist
+\item
+  Создан каталог \texttt{labs/lab06}
+\end{itemize}
+
+\begin{figure}
+\hypertarget{fig:001}{%
+\centering
+\includegraphics[width=0.7\textwidth,height=\textheight]{image/1.png}
+\caption{Созданный каталог}\label{fig:001}
+}
+\end{figure}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-1}{}
+\begin{block}{3.1. Подготовка рабочего пространства}
+\protect\hypertarget{ux43fux43eux434ux433ux43eux442ux43eux432ux43aux430-ux440ux430ux431ux43eux447ux435ux433ux43e-ux43fux440ux43eux441ux442ux440ux430ux43dux441ux442ux432ux430-1}{}
+\begin{itemize}
+\tightlist
+\item
+  Создан проект DrWatson в \texttt{labs/lab06/project}
+\end{itemize}
+
+\begin{figure}
+\hypertarget{fig:002}{%
+\centering
+\includegraphics[width=0.7\textwidth,height=\textheight]{image/2.png}
+\caption{Созданный проект DrWatson}\label{fig:002}
+}
+\end{figure}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-2}{}
+\begin{block}{3.1. Подготовка рабочего пространства}
+\protect\hypertarget{ux43fux43eux434ux433ux43eux442ux43eux432ux43aux430-ux440ux430ux431ux43eux447ux435ux433ux43e-ux43fux440ux43eux441ux442ux440ux430ux43dux441ux442ux432ux430-2}{}
+\begin{itemize}
+\item
+  Установлены необходимые пакеты: \texttt{OrdinaryDiffEq.jl},
+  \texttt{Plots.jl}, \texttt{DataFrames.jl}, \texttt{CSV.jl},
+  \texttt{Random.jl}, \texttt{LinearAlgebra.jl}, \texttt{Literate.jl},
+  \texttt{DrWatson} и др.
+\item
+  Проверена установка пакетов
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-3}{}
+\begin{block}{3.2. Реализация модуля SIRPetri.jl}
+\protect\hypertarget{ux440ux435ux430ux43bux438ux437ux430ux446ux438ux44f-ux43cux43eux434ux443ux43bux44f-sirpetri.jl}{}
+Создан файл \texttt{src/SIRPetri.jl} с определением: - Структуры
+\texttt{PetriNet} - Функции \texttt{build\_sir\_network(β,\ γ)} -
+Функции \texttt{simulate\_deterministic} (решение ОДУ) - Функции
+\texttt{simulate\_stochastic} (алгоритм Гиллеспи) - Функции
+\texttt{plot\_sir} для визуализации
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-4}{}
+\begin{block}{3.3. Базовые скрипты}
+\protect\hypertarget{ux431ux430ux437ux43eux432ux44bux435-ux441ux43aux440ux438ux43fux442ux44b}{}
+Созданы и запущены скрипты:
+
+\texttt{dining\_philosophers.jl} - Базовый эксперимент
+\texttt{dining\_philosophers\_animation.jl} - Анимация процесса
+\texttt{dining\_philosophers\_report.jl} - Итоговый отчёт
+\end{block}
+\end{frame}
+
+\begin{frame}{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-5}{}
+\begin{block}{3.4. Параметрические исследования}
+\protect\hypertarget{ux43fux430ux440ux430ux43cux435ux442ux440ux438ux447ux435ux441ux43aux438ux435-ux438ux441ux441ux43bux435ux434ux43eux432ux430ux43dux438ux44f}{}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Влияние параметра β} (β = 0.1..0.8, γ = 0.1 фиксирован)
+\item
+  \textbf{Влияние параметров β и γ} (β = 0.1..0.8, γ = 0.05..0.2)
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-6}{}
+\begin{block}{3.5. Литературное программирование}
+\protect\hypertarget{ux43bux438ux442ux435ux440ux430ux442ux443ux440ux43dux43eux435-ux43fux440ux43eux433ux440ux430ux43cux43cux438ux440ux43eux432ux430ux43dux438ux435}{}
+Созданы литературные версии всех скриптов (\texttt{*\_literate.jl}) с
+подробными Markdown-комментариями.
+
+С помощью \texttt{scripts/tangle.jl} сгенерированы: - Чистый код в папку
+\texttt{scripts/} - Jupyter notebooks в папку \texttt{notebooks/} -
+Quarto-документы в папку \texttt{markdown/}
+\end{block}
+\end{frame}
+
+\begin{frame}{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-7}{}
+\begin{block}{3.5.1. Генерация производных форматов}
+\protect\hypertarget{ux433ux435ux43dux435ux440ux430ux446ux438ux44f-ux43fux440ux43eux438ux437ux432ux43eux434ux43dux44bux445-ux444ux43eux440ux43cux430ux442ux43eux432}{}
+Сгенерированы производные форматы для всех литературных скриптов
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{3. Этапы выполнения}
+\protect\hypertarget{ux44dux442ux430ux43fux44b-ux432ux44bux43fux43eux43bux43dux435ux43dux438ux44f-8}{}
+\begin{block}{3.6. Создание отчёта}
+\protect\hypertarget{ux441ux43eux437ux434ux430ux43dux438ux435-ux43eux442ux447ux451ux442ux430}{}
+\begin{itemize}
+\tightlist
+\item
+  Создан файл \texttt{report.qmd} в папке \texttt{report/}
+\item
+  Добавлены все графики с подписями
+\item
+  Скомпилированы report.pdf и report.docx
+\end{itemize}
+\end{block}
+
+\begin{block}{3.7. Отправка на GitVerse и GitHub}
+\protect\hypertarget{ux43eux442ux43fux440ux430ux432ux43aux430-ux43dux430-gitverse-ux438-github}{}
+\begin{itemize}
+\tightlist
+\item
+  Все изменения добавлены в Git
+\item
+  Создан коммит:
+  \texttt{feat(lab06):\ реализация\ модели\ SIR\ на\ сетях\ Петри}
+\item
+  Изменения отправлены на GitVerse и GitHub
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Полученные результаты}
+\protect\hypertarget{ux43fux43eux43bux443ux447ux435ux43dux43dux44bux435-ux440ux435ux437ux443ux43bux44cux442ux430ux442ux44b}{}
+\begin{block}{4.1. Базовый эксперимент}
+\protect\hypertarget{ux431ux430ux437ux43eux432ux44bux439-ux44dux43aux441ux43fux435ux440ux438ux43cux435ux43dux442}{}
+\begin{block}{Детерминированная динамика}
+\protect\hypertarget{ux434ux435ux442ux435ux440ux43cux438ux43dux438ux440ux43eux432ux430ux43dux43dux430ux44f-ux434ux438ux43dux430ux43cux438ux43aux430}{}
+\begin{figure}
+\hypertarget{fig:det}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_det_dynamics.png}
+\caption{Детерминированная динамика SIR}\label{fig:det}
+}
+\end{figure}
+\end{block}
+
+\begin{block}{Стохастическая динамика}
+\protect\hypertarget{ux441ux442ux43eux445ux430ux441ux442ux438ux447ux435ux441ux43aux430ux44f-ux434ux438ux43dux430ux43cux438ux43aux430}{}
+\begin{figure}
+\hypertarget{fig:stoch}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_stoch_dynamics.png}
+\caption{Стохастическая динамика SIR}\label{fig:stoch}
+}
+\end{figure}
+\end{block}
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Полученные результаты}
+\protect\hypertarget{ux43fux43eux43bux443ux447ux435ux43dux43dux44bux435-ux440ux435ux437ux443ux43bux44cux442ux430ux442ux44b-1}{}
+\begin{block}{4.2. Сканирование параметра β}
+\protect\hypertarget{ux441ux43aux430ux43dux438ux440ux43eux432ux430ux43dux438ux435-ux43fux430ux440ux430ux43cux435ux442ux440ux430-ux3b2}{}
+\begin{figure}
+\hypertarget{fig:scan}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_scan.png}
+\caption{Сканирование параметра β}\label{fig:scan}
+}
+\end{figure}
+
+\textbf{Анализ:} При малых β эпидемия не возникает. С ростом β пик
+заболеваемости резко возрастает.
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Полученные результаты}
+\protect\hypertarget{ux43fux43eux43bux443ux447ux435ux43dux43dux44bux435-ux440ux435ux437ux443ux43bux44cux442ux430ux442ux44b-2}{}
+\begin{block}{4.3. Сравнение детерм. и стохаст. динамики}
+\protect\hypertarget{ux441ux440ux430ux432ux43dux435ux43dux438ux435-ux434ux435ux442ux435ux440ux43c.-ux438-ux441ux442ux43eux445ux430ux441ux442.-ux434ux438ux43dux430ux43cux438ux43aux438}{}
+\begin{figure}
+\hypertarget{fig:comparison}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/comparison.png}
+\caption{Сравнение динамик}\label{fig:comparison}
+}
+\end{figure}
+
+\textbf{Анализ:} Стохастическая кривая имеет флуктуации, но качественно
+совпадает с детерминированной.
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Полученные результаты}
+\protect\hypertarget{ux43fux43eux43bux443ux447ux435ux43dux43dux44bux435-ux440ux435ux437ux443ux43bux44cux442ux430ux442ux44b-3}{}
+\begin{block}{4.4. Чувствительность к параметру β}
+\protect\hypertarget{ux447ux443ux432ux441ux442ux432ux438ux442ux435ux43bux44cux43dux43eux441ux442ux44c-ux43a-ux43fux430ux440ux430ux43cux435ux442ux440ux443-ux3b2}{}
+\begin{figure}
+\hypertarget{fig:sensitivity}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sensitivity.png}
+\caption{Чувствительность к β}\label{fig:sensitivity}
+}
+\end{figure}
+
+\textbf{Анализ:} Зависимость peak I(β) имеет пороговый характер.
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Полученные результаты}
+\protect\hypertarget{ux43fux43eux43bux443ux447ux435ux43dux43dux44bux435-ux440ux435ux437ux443ux43bux44cux442ux430ux442ux44b-4}{}
+\begin{block}{4.5. Параметрическое исследование}
+\protect\hypertarget{ux43fux430ux440ux430ux43cux435ux442ux440ux438ux447ux435ux441ux43aux43eux435-ux438ux441ux441ux43bux435ux434ux43eux432ux430ux43dux438ux435}{}
+\begin{block}{Тепловая карта пика I}
+\protect\hypertarget{ux442ux435ux43fux43bux43eux432ux430ux44f-ux43aux430ux440ux442ux430-ux43fux438ux43aux430-i}{}
+\begin{figure}
+\hypertarget{fig:heatmap}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_parametric_heatmap.png}
+\caption{Тепловая карта зависимости peak I от β и γ}\label{fig:heatmap}
+}
+\end{figure}
+\end{block}
+
+\begin{block}{Зависимость пика I от β}
+\protect\hypertarget{ux437ux430ux432ux438ux441ux438ux43cux43eux441ux442ux44c-ux43fux438ux43aux430-i-ux43eux442-ux3b2}{}
+\begin{figure}
+\hypertarget{fig:beta_dep}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_parametric_beta_dependence.png}
+\caption{Зависимость peak I от β для разных γ}\label{fig:beta_dep}
+}
+\end{figure}
+\end{block}
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Полученные результаты}
+\protect\hypertarget{ux43fux43eux43bux443ux447ux435ux43dux43dux44bux435-ux440ux435ux437ux443ux43bux44cux442ux430ux442ux44b-5}{}
+\begin{block}{4.5. Параметрическое исследование}
+\protect\hypertarget{ux43fux430ux440ux430ux43cux435ux442ux440ux438ux447ux435ux441ux43aux43eux435-ux438ux441ux441ux43bux435ux434ux43eux432ux430ux43dux438ux435-1}{}
+\begin{block}{Зависимость пика I от γ}
+\protect\hypertarget{ux437ux430ux432ux438ux441ux438ux43cux43eux441ux442ux44c-ux43fux438ux43aux430-i-ux43eux442-ux3b3}{}
+\begin{figure}
+\hypertarget{fig:gamma_dep}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_parametric_gamma_dependence.png}
+\caption{Зависимость peak I от γ для разных β}\label{fig:gamma_dep}
+}
+\end{figure}
+\end{block}
+
+\begin{block}{Сравнение детерм. и стохаст.}
+\protect\hypertarget{ux441ux440ux430ux432ux43dux435ux43dux438ux435-ux434ux435ux442ux435ux440ux43c.-ux438-ux441ux442ux43eux445ux430ux441ux442.}{}
+\begin{figure}
+\hypertarget{fig:method_comp}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_parametric_comparison.png}
+\caption{Сравнение методов}\label{fig:method_comp}
+}
+\end{figure}
+\end{block}
+\end{block}
+\end{frame}
+
+\begin{frame}{4. Полученные результаты}
+\protect\hypertarget{ux43fux43eux43bux443ux447ux435ux43dux43dux44bux435-ux440ux435ux437ux443ux43bux44cux442ux430ux442ux44b-6}{}
+\begin{block}{4.6. Анимация динамики}
+\protect\hypertarget{ux430ux43dux438ux43cux430ux446ux438ux44f-ux434ux438ux43dux430ux43cux438ux43aux438}{}
+\begin{figure}
+\hypertarget{fig:animation}{%
+\centering
+\includegraphics[width=1\textwidth,height=\textheight]{image/project/plots/sir_animation.gif}
+\caption{Анимация динамики SIR}\label{fig:animation}
+}
+\end{figure}
+
+Анимация наглядно показывает: - Рост числа инфицированных в начале
+эпидемии - Пик заболеваемости - Последующее снижение I и рост R
+\end{block}
+\end{frame}
+
+\begin{frame}{5. Выводы}
+\protect\hypertarget{ux432ux44bux432ux43eux434ux44b}{}
+В ходе выполнения лабораторной работы:
+
+\begin{itemize}
+\item
+  Реализована модель SIR на сетях Петри.
+\item
+  Проведено детерминированное (решение ОДУ) и стохастическое (алгоритм
+  Гиллеспи) моделирование.
+\item
+  Выполнено сканирование параметра β для анализа порогового явления.
+\item
+  Создана анимация динамики эпидемии.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{5. Выводы}
+\protect\hypertarget{ux432ux44bux432ux43eux434ux44b-1}{}
+\begin{itemize}
+\item
+  Проведено параметрическое исследование влияния β и γ на динамику.
+\item
+  Освоено литературное программирование с использованием Literate.jl.
+\item
+  Сгенерированы производные форматы: чистый код, Jupyter notebooks,
+  Quarto-документы.
+\item
+  Подготовлен отчёт в форматах PDF и DOCX.
+\item
+  Результаты отправлены на GitVerse.
+\end{itemize}
+
+Работа позволила на практике освоить аппарат сетей Петри для
+моделирования эпидемиологических процессов и закрепить навыки работы с
+языком Julia
+\end{frame}
