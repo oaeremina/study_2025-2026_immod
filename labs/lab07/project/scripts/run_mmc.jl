@@ -1,0 +1,75 @@
+using DrWatson
+@quickactivate "project"
+using Plots, DataFrames, CSV, Statistics
+include(srcdir("mmc.jl"))
+
+function plot_analytics()
+    λ_range = 0.1:0.05:1.5
+    c_vals = [1, 2, 3, 4]
+    μ_fixed = 1.0
+    
+    plots = []
+    for c in c_vals
+        Pwait_vals = []
+        for λ in λ_range
+            if c * μ_fixed > λ
+                push!(Pwait_vals, analytical_metrics(λ, μ_fixed, c).Pwait)
+            else
+                push!(Pwait_vals, NaN)
+            end
+        end
+        p = plot(λ_range, Pwait_vals, label="c=$c", xlabel="λ", ylabel="Pwait", 
+                 title="Вероятность ожидания", linewidth=2)
+        push!(plots, p)
+    end
+    
+    p_all = plot(plots..., layout=(2,2), size=(800,600))
+    savefig(plotsdir("mmc_analytics.png"))
+    println("✅ График сохранён: ", plotsdir("mmc_analytics.png"))
+    return p_all
+end
+
+function parametric_study()
+    λ_vals = [0.5, 0.9, 1.2, 1.5]
+    c_vals = [1, 2, 3, 4]
+    results = []
+    
+    for λ in λ_vals
+        for c in c_vals
+            μ = 1.0
+            if λ < c * μ
+                m = analytical_metrics(λ, μ, c)
+                push!(results, (λ=λ, c=c, ρ=m.ρ, Pwait=m.Pwait, Lq=m.Lq, Wq=m.Wq))
+            end
+        end
+    end
+    
+    df = DataFrame(results)
+    CSV.write(datadir("mmc_parametric.csv"), df)
+    println("✅ Параметрическое исследование сохранено: ", datadir("mmc_parametric.csv"))
+    return df
+end
+
+function main()
+    println("="^60)
+    println("Модель М/М/с")
+    println("="^60)
+    
+    println("\nАналитические характеристики при λ=0.9, μ=0.5, c=2:")
+    m = analytical_metrics(0.9, 0.5, 2)
+    println("  ρ = $(round(m.ρ, digits=3))")
+    println("  P0 = $(round(m.P0, digits=4))")
+    println("  Pwait = $(round(m.Pwait, digits=4))")
+    println("  Lq = $(round(m.Lq, digits=3))")
+    println("  Wq = $(round(m.Wq, digits=3))")
+    println("  W = $(round(m.W, digits=3))")
+    println("  L = $(round(m.L, digits=3))")
+    
+    plot_analytics()
+    parametric_study()
+    
+    println("\n✅ Моделирование завершено!")
+end
+
+# Запуск (без @FILE чтобы избежать ошибки)
+main()

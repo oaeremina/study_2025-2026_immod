@@ -1,0 +1,252 @@
+using DrWatson
+@quickactivate "project"
+using Distributions
+using ConcurrentSim
+using ResumableFunctions
+using Random
+using StableRNGs
+using DataFrames
+using Plots
+using CSV
+using Statistics
+using Printf
+
+include(srcdir("ross.jl"))
+
+const RUNS = 5
+const N_DEFAULT = 10
+const S_DEFAULT = 3
+const R_DEFAULT = 2
+const LAMBDA = 100.0
+const MU = 1.0
+
+function run_experiments()
+    results = DataFrame(
+        N=Int[], S=Int[], R=Int[],
+        mean_time=Float64[], std_time=Float64[],
+        min_time=Float64[], max_time=Float64[]
+    )
+
+    n_values = [5, 10]
+    s_values = [2, 3]
+    r_values = [1, 2]
+
+    total = length(n_values) * length(s_values) * length(r_values)
+    current = 0
+
+    for n in n_values
+        for s in s_values
+            for r in r_values
+                current += 1
+                println("[$current/$total] Running N=$n, S=$s, R=$r...")
+
+                times = Float64[]
+
+                for run_idx in 1:RUNS
+                    try
+                        t, _, _ = run_single(n, s, r, LAMBDA, MU, run_idx * 1000 + n + s + r)
+                        if t > 0 && t < 1e6
+                            push!(times, t)
+                        end
+                    catch e
+                    end
+                end
+
+                if length(times) > 0
+                    push!(results, (n, s, r,
+                        round(mean(times), digits=2),
+                        round(std(times), digits=2),
+                        round(minimum(times), digits=2),
+                        round(maximum(times), digits=2)
+                    ))
+                    println("    Mean: $(round(mean(times), digits=2)) hours")
+                else
+                    push!(results, (n, s, r, 0.0, 0.0, 0.0, 0.0))
+                    println("    No successful runs")
+                end
+            end
+        end
+    end
+
+    return results
+end
+
+function plot_results(mon::Monitor, crash_time::Float64, n::Int, s::Int, r::Int)
+    if length(mon.time) == 0
+        @warn "No data for plotting"
+        return nothing
+    end
+
+    total_good = [mon.operational[i] + mon.spare[i] for i in 1:length(mon.time)]
+
+    p1 = plot(mon.time, total_good,
+        label="Total working machines",
+        xlabel="Time (hours)", ylabel="Count",
+        title="Working machines dynamics (N=$n, S=$s, R=$r)",
+        linewidth=2, color=:blue)
+    vline!([crash_time], label="System crash", linestyle=:dash, color=:red)
+    hline!([n], label="Required for operation", linestyle=:dot, color=:green)
+
+    p2 = plot(mon.time, mon.operational,
+        label="Operational machines",
+        xlabel="Time (hours)", ylabel="Count",
+        title="Operational machines",
+        linewidth=2, color=:blue)
+    hline!([n], label="Required N=$n", linestyle=:dot, color=:red)
+
+    p3 = plot(mon.time, mon.spare,
+        label="Spare machines",
+        xlabel="Time (hours)", ylabel="Count",
+        title="Spare machines",
+        linewidth=2, color=:green)
+
+    p4 = plot(mon.time, mon.queue_length,
+        label="Repair queue length",
+        xlabel="Time (hours)", ylabel="Queue length",
+        title="Repair queue (R=$r repairmen)",
+        linewidth=2, color=:orange)
+
+    p = plot(p1, p2, p3, p4, layout=(4,1), size=(800, 1000))
+
+    if !isdir(plotsdir())
+        mkpath(plotsdir())
+    end
+    savefig(plotsdir("ross_dynamics.png"))
+    println("Plot saved: ", plotsdir("ross_dynamics.png"))
+
+    return p
+end
+
+function plot_heatmap(results::DataFrame)
+    if nrow(results) == 0
+        println("No data for heatmap")
+        return
+    end
+
+    for r_val in [1, 2]
+        data = filter(row -> row.R == r_val, results)
+        if nrow(data) > 0 && length(unique(data.S)) > 1 && length(unique(data.N)) > 1
+            try
+                n_vals = sort(unique(data.N))
+                s_vals = sort(unique(data.S))
+                matrix = zeros(length(n_vals), length(s_vals))
+                for i in 1:length(n_vals)
+                    for j in 1:length(s_vals)
+                        row = filter(row -> row.N == n_vals[i] && row.S == s_vals[j], data)
+                        if nrow(row) > 0
+                            matrix[i, j] = row.mean_time[1]
+                        end
+                    end
+                end
+
+                p = heatmap(s_vals, n_vals, matrix,
+                    xlabel="Spare (S)", ylabel="Working machines (N)",
+                    title="Mean time to crash (R=$r_val)",
+                    color=:viridis)
+                savefig(plotsdir("ross_heatmap_R$r_val.png"))
+                println("Heatmap saved: ross_heatmap_R$r_val.png")
+            catch e
+                println("Error creating heatmap for R=$r_val: $e")
+            end
+        end
+    end
+end
+
+function compare_with_analytical()
+    println("\n" * "="^60)
+    println("COMPARISON WITH ANALYTICAL SOLUTION")
+    println("="^60)
+
+    test_cases = [(10, 2, 1), (10, 3, 1), (10, 2, 2), (10, 3, 2)]
+
+    println("\nN     S     R    Simulation   Analytical   Deviation")
+    println("-"^60)
+
+    for (n, s, r) in test_cases
+        times = Float64[]
+        for run_idx in 1:RUNS
+            try
+                t, _, _ = run_single(n, s, r, LAMBDA, MU, run_idx * 1000)
+                if t > 0 && t < 1e6
+                    push!(times, t)
+                end
+            catch
+            end
+        end
+
+        sim_mean = length(times) > 0 ? mean(times) : 0.0
+        analytic = analytical_mttf(n, s, r, LAMBDA, MU)
+
+        if analytic != Inf && analytic > 0 && sim_mean > 0
+            dev = (sim_mean - analytic) / analytic * 100
+            println(@sprintf("%2d   %2d   %2d   %10.1f   %10.1f   %+8.1f%%",
+                    n, s, r, sim_mean, analytic, dev))
+        else
+            println(@sprintf("%2d   %2d   %2d   %10.1f   %10.1f   %8s",
+                    n, s, r, sim_mean, analytic, "N/A"))
+        end
+    end
+end
+
+function main()
+    println("="^60)
+    println("ROSS MODEL SIMULATION")
+    println("="^60)
+
+    println("\nDefault parameters:")
+    println("  N = $N_DEFAULT (working machines)")
+    println("  S = $S_DEFAULT (spare machines)")
+    println("  R = $R_DEFAULT (repairmen)")
+    println("  Mean time to failure = $LAMBDA hours")
+    println("  Mean repair time = $MU hour")
+
+    println("\n" * "="^40)
+    println("SINGLE RUN (visualization)")
+    println("="^40)
+
+    try
+        crash_time, msg, mon = run_single(N_DEFAULT, S_DEFAULT, R_DEFAULT, LAMBDA, MU, 150)
+        println(msg)
+        println("Crash time: $(round(crash_time, digits=2)) hours")
+        plot_results(mon, crash_time, N_DEFAULT, S_DEFAULT, R_DEFAULT)
+    catch e
+        println("Error in single run: $e")
+    end
+
+    println("\n" * "="^40)
+    println("BATCH RUNS (RUNS=$RUNS)")
+    println("="^40)
+
+    results = run_experiments()
+
+    if nrow(results) > 0 && any(results.mean_time .> 0)
+        println("\nRESULTS:")
+        println("-"^70)
+        for row in eachrow(results)
+            if row.mean_time > 0
+                println(@sprintf("N=%2d, S=%2d, R=%d: %.1f ± %.1f hours (min=%.1f, max=%.1f)",
+                        row.N, row.S, row.R, row.mean_time, row.std_time, row.min_time, row.max_time))
+            end
+        end
+
+        if !isdir(datadir())
+            mkpath(datadir())
+        end
+        CSV.write(datadir("ross_results.csv"), results)
+        println("\nResults saved to: ", datadir("ross_results.csv"))
+
+        plot_heatmap(results)
+    else
+        println("No valid results to display")
+    end
+
+    compare_with_analytical()
+
+    println("\n" * "="^60)
+    println("ANALYSIS COMPLETED")
+    println("="^60)
+end
+
+main()
+
+# This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
