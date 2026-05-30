@@ -1,0 +1,211 @@
+<hr />
+<p>title: Лабораторная работа 8 license: CC BY date: 2026-05-16 author: Еремина Оксана Андреевна —</p>
+<div class="columns" data-align="center">
+<div class="column" style="width:70%;">
+<ul>
+<li>Еремина Оксана Андреевна</li>
+<li>студентка НКНбд-01-23</li>
+<li>факультет физико-математических и естественных наук</li>
+<li>Российский университет дружбы народов им. П. Лумумбы</li>
+<li><a href="mailto:1132236056@pfur.ru">1132236056@rudn.ru</a></li>
+</ul>
+</div><div class="column" style="width:30%;">
+<p><img src="plots/me.jpeg" /></p>
+</div>
+</div>
+<h1 id="вводная-часть">Вводная часть</h1>
+<h2 id="цель">Цель</h2>
+<ul>
+<li>Изучить дискретно-событийный подход к имитационному моделированию</li>
+<li>Реализовать стохастическую SIR-модель на языке Julia</li>
+<li>Провести анализ влияния параметров модели</li>
+<li>Сравнить стохастическую и детерминированную версии</li>
+</ul>
+<h2 id="что-такое-sir-модель">Что такое SIR-модель?</h2>
+<p><strong>SIR</strong> – классическая эпидемиологическая модель:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Символ</th>
+<th>Состояние</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>S</strong></td>
+<td>Susceptible</td>
+<td>Восприимчивые к заболеванию</td>
+</tr>
+<tr class="even">
+<td><strong>I</strong></td>
+<td>Infected</td>
+<td>Инфицированные и заразные</td>
+</tr>
+<tr class="odd">
+<td><strong>R</strong></td>
+<td>Recovered</td>
+<td>Переболевшие (выздоровевшие)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="параметры-модели-и-r₀">Параметры модели и R₀</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Параметр</th>
+<th>Значение</th>
+<th>Смысл</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline"><em>β</em></span></td>
+<td>0.05</td>
+<td>Вероятность заражения при контакте</td>
+</tr>
+<tr class="even">
+<td><span class="math inline"><em>c</em></span></td>
+<td>10.0</td>
+<td>Частота контактов (1/время)</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline"><em>γ</em></span></td>
+<td>0.25</td>
+<td>Интенсивность выздоровления</td>
+</tr>
+</tbody>
+</table>
+<h2 id="дискретно-событийный-подход-des">Дискретно-событийный подход (DES)</h2>
+<p><strong>Особенности:</strong></p>
+<ul>
+<li>Время продвигается от события к событию</li>
+<li>Агенты действуют независимо (конкурентно)</li>
+<li>Случайные интервалы времени (экспоненциальное распределение)</li>
+</ul>
+<p><strong>События в модели:</strong></p>
+<ol type="1">
+<li>Контакт между индивидами</li>
+<li>Заражение (с вероятностью <span class="math inline"><em>β</em></span>)</li>
+<li>Выздоровление (через случайное время)</li>
+</ol>
+<h1 id="выполнение-лабораторной-работы">Выполнение лабораторной работы</h1>
+<h2 id="генерация-нужных-файлов">Генерация нужных файлов</h2>
+<p>Скачала необходимые пакеты, сгенерировала нужные файлы (jupyter notebook, чистый код и quarto)</p>
+<h2 id="результаты">Результаты</h2>
+<p><img src="plots/sir_des.png" id="fig-001" style="width:50.0%" /></p>
+<h2 id="анализ-чувствительности-варьирование-beta">Анализ чувствительности – варьирование <span class="math inline"><em>β</em></span></h2>
+<table>
+<thead>
+<tr class="header">
+<th>β</th>
+<th>Пик инфицированных</th>
+<th>Время пика</th>
+<th>Итоговые переболевшие</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.03</td>
+<td>87</td>
+<td>28.5</td>
+<td>623</td>
+</tr>
+<tr class="even">
+<td>0.05</td>
+<td>174</td>
+<td>17.9</td>
+<td>751</td>
+</tr>
+<tr class="odd">
+<td>0.07</td>
+<td>289</td>
+<td>12.3</td>
+<td>823</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Вывод:</strong> Чем выше β, тем быстрее и сильнее эпидемия.</p>
+<h2 id="анализ-чувствительности-варьирование-с-и-gamma">Анализ чувствительности – варьирование <span class="math inline"><em>с</em></span> и <span class="math inline"><em>γ</em></span></h2>
+<p><strong>Варьирование c (частота контактов)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>c</th>
+<th>Пик инфицированных</th>
+<th>Время пика</th>
+<th>Итоговые переболевшие</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>5.0</td>
+<td>98</td>
+<td>25.3</td>
+<td>645</td>
+</tr>
+<tr class="even">
+<td>10.0</td>
+<td>174</td>
+<td>17.9</td>
+<td>751</td>
+</tr>
+<tr class="odd">
+<td>15.0</td>
+<td>267</td>
+<td>13.8</td>
+<td>812</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Варьирование γ (интенсивность выздоровления)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>γ</th>
+<th>Пик инфицированных</th>
+<th>Время пика</th>
+<th>Итоговые переболевшие</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0.15</td>
+<td>267</td>
+<td>21.4</td>
+<td>845</td>
+</tr>
+<tr class="even">
+<td>0.25</td>
+<td>174</td>
+<td>17.9</td>
+<td>751</td>
+</tr>
+<tr class="odd">
+<td>0.35</td>
+<td>112</td>
+<td>14.2</td>
+<td>623</td>
+</tr>
+</tbody>
+</table>
+<h2 id="сравнение-версий-стохастическая-и-детерминированная">Сравнение версий (стохастическая и детерминированная)</h2>
+<figure>
+<img src="plots/recovery_comparison.png" id="fig-001" style="width:70.0%" alt="" /><figcaption>Сравнение</figcaption>
+</figure>
+<h2 id="выводы">Выводы</h2>
+<ol type="1">
+<li><p><strong>Чувствительность к параметрам:</strong></p>
+<ul>
+<li>↑ <span class="math inline"><em>β</em></span> или ↑ <span class="math inline"><em>c</em></span> → ↑ пик <span class="math inline"><em>I</em></span>, ↓ время пика</li>
+<li>↑ <span class="math inline"><em>γ</em></span> → ↓ пик <span class="math inline"><em>I</em></span></li>
+</ul></li>
+<li><p><strong>Сравнение версий:</strong></p>
+<ul>
+<li>Детерминированная → гладкая кривая</li>
+<li>Стохастическая → реалистична для малых популяций</li>
+</ul></li>
+<li><p><strong>Модель работоспособна</strong> и пригодна для имитации эпидемий</p></li>
+<li><p><strong><span class="math inline"><em>R</em><sub>0</sub></span> = 2.0</strong> → эпидемия распространяется (подтверждено)</p></li>
+</ol>
+<p>Цель достигнута. Модели М/М/с и Росса успешно реализованы на Julia с использованием пакета ConcurrentSim.</p>
